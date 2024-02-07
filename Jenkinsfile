@@ -73,6 +73,28 @@ pipeline{
                }
             }
         }
+        stage('PUSH to JFROG'){
+            when {
+                expression { params.action == 'create' }
+            }
+            steps {
+                script {
+                    echo "Attempting to push artifacts to JFrog Artifactory"
+                    withCredentials([usernamePassword(
+                        credrentialsId: "ARTIFACTORY",
+                        usernameVariable: "USER",
+                        passwordVariable: "PASS"
+                        )]) {
+                            echo "Username: $USER"
+                            echo "Password: $PASS"
+
+                            def curlCommand = "curl -u '${USER}:${PASS}' -T target/*.jar ${params.ArtifactoryURL}/artifactory/example-repo-local/"
+                            echo "Executing curl command: $curlCommand"
+                            sh curlCommand
+                        }
+                }
+            }
+        }
         stage('Docker Image Build'){
          when { expression {  params.action == 'create' } }
             steps{
