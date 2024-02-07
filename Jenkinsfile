@@ -81,7 +81,7 @@ pipeline{
                 script {
                     echo "Attempting to push artifacts to JFrog Artifactory"
                     withCredentials([usernamePassword(
-                        credrentialsId: "ARTIFACTORY",
+                        credrentialsId: "artifactory",
                         usernameVariable: "USER",
                         passwordVariable: "PASS"
                         )]) {
