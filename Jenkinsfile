@@ -20,7 +20,7 @@ pipeline{
             steps{
             gitCheckout(
                 branch: "main",
-                url: "https://github.com/praveen1994dec/Java_app_3.0.git"
+                url: "https://github.com/subhodeep007/Java_app_3.0.git"
             )
             }
         }
@@ -44,26 +44,26 @@ pipeline{
                }
             }
         }
-        stage('Static code analysis: Sonarqube'){
-         when { expression {  params.action == 'create' } }
-            steps{
-               script{
+       // stage('Static code analysis: Sonarqube'){
+       //  when { expression {  params.action == 'create' } }
+          //  steps{
+              // script{
                    
-                   def SonarQubecredentialsId = 'sonarqube-api'
-                   statiCodeAnalysis(SonarQubecredentialsId)
-               }
-            }
-       }
-       stage('Quality Gate Status Check : Sonarqube'){
-         when { expression {  params.action == 'create' } }
-            steps{
-               script{
+                 //  def SonarQubecredentialsId = 'sonarqube-api'
+                  // statiCodeAnalysis(SonarQubecredentialsId)
+             //  }
+           // }
+     //  }
+      // stage('Quality Gate Status Check : Sonarqube'){
+       //  when { expression {  params.action == 'create' } }
+          // steps{
+           //    script{
                    
-                   def SonarQubecredentialsId = 'sonarqube-api'
-                   QualityGateStatus(SonarQubecredentialsId)
-               }
-            }
-       }
+                //   def SonarQubecredentialsId = 'sonarqube-api'
+                 //  QualityGateStatus(SonarQubecredentialsId)
+            //   }
+          //  }
+     //  }
         stage('Maven Build : maven'){
          when { expression {  params.action == 'create' } }
             steps{
@@ -73,28 +73,7 @@ pipeline{
                }
             }
         }
-        stage('PUSH to JFROG'){
-            when {
-                expression { params.action == 'create' }
-            }
-            steps {
-                script {
-                    echo "Attempting to push artifacts to JFrog Artifactory"
-                    withCredentials([usernamePassword(
-                        credrentialsId: "artifactory",
-                        usernameVariable: "USER",
-                        passwordVariable: "PASS"
-                        )]) {
-                            echo "Username: $USER"
-                            echo "Password: $PASS"
-
-                            def curlCommand = "curl -u '${USER}:${PASS}' -T target/*.jar ${params.ArtifactoryURL}/artifactory/example-repo-local/"
-                            echo "Executing curl command: $curlCommand"
-                            sh curlCommand
-                        }
-                }
-            }
-        }
+        
         stage('Docker Image Build'){
          when { expression {  params.action == 'create' } }
             steps{
@@ -104,13 +83,21 @@ pipeline{
                }
             }
         }
-         stage('Docker Image Scan: trivy '){
-         when { expression {  params.action == 'create' } }
-            steps{
-               script{
+        //stage('Docker Image Scan: trivy '){
+       //  when { expression {  params.action == 'create' } }
+           // steps{
+             //  script{
                    
-                   dockerImageScan("${params.ImageName}","${params.ImageTag}","${params.DockerHubUser}")
-               }
+                //   dockerImageScan("${params.ImageName}","${params.ImageTag}","${params.DockerHubUser}")
+             //  }
+           // }
+     //   }
+        stage ('Pushing Jfrog File'){
+          when { expression {  params.action == 'create' } }
+          steps{
+            script{
+                 sh 'curl -X PUT -u admin:password -T  /var/lib/jenkins/workspace/java-3.0/target/kubernetes-configmap-reload-0.0.1-SNAPSHOT.jar "http://18.234.253.20:8082/artifactory/example-repo-local/kubernetes-configmap-reload-0.0.1-SNAPSHOT.jar"'
+                }
             }
         }
         stage('Docker Image Push : DockerHub '){
